@@ -1,8 +1,27 @@
 'use strict';
-// Starts a YandexART job (takes 10-40 s) and returns its operation id; the browser polls /api/image-status.
+// Starts a YandexART job (takes 10-40 s) and returns its operation id. The browser then polls this same endpoint with {id}.
+// (Merged into one function: the Hobby plan allows 12 functions per deployment.)
 const L = require('./_lib');
 
+async function status(req, res) {
+  // Polling is cheap and not counted against daily limits, but it still needs the key.
+  if (req.method !== 'POST') return L.fail(res, 405, 'method');
+  if (!L.creds()) return L.fail(res, 503, 'config', 'AI is not configured yet');
+  const b = await L.readBody(req);
+  const id = String(b.id || '');
+  if (!/^[A-Za-z0-9_-]{6,80}$/.test(id)) return L.fail(res, 400, 'id');
+  try {
+    const d = await L.yfetch(L.HOST() + '/operations/' + id, { method: 'GET' });
+    if (!d || !d.done) return L.send(res, 200, { done: false });
+    if (d.error) return L.fail(res, 502, 'image', 'The picture was rejected, change the description');
+    const img = d.response && d.response.image;
+    if (!img) return L.fail(res, 502, 'image', 'No picture came back');
+    L.send(res, 200, { done: true, image: 'data:image/jpeg;base64,' + img });
+  } catch (e) { L.handleError(res, e); }
+}
+
 module.exports = async (req, res) => {
+  if (req.method === 'POST') { req.body = await L.readBody(req); if (req.body.id) return status(req, res); }
   const b = await L.guard(req, res, 'image');
   if (!b) return;
   const prompt = L.clip(b.prompt, 500);

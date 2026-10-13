@@ -131,7 +131,7 @@
       var id = j.id, tries = 0;
       function poll() {
         if (++tries > 45) throw apiErr('image', 'timeout');
-        return sleep(tries === 1 ? 4000 : 2500).then(function () { return BS.api('image-status', { id: id }); }).then(function (s) { return s.done ? s.image : poll(); });
+        return sleep(tries === 1 ? 4000 : 2500).then(function () { return BS.api('image', { id: id }); }).then(function (s) { return s.done ? s.image : poll(); });
       }
       return poll();
     });
