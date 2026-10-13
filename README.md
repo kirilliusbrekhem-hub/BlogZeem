@@ -11,3 +11,7 @@ AI studio for creators: account setup, 30-day plan, posts, images and video for 
 
 ## Files
 `index.html style.css` page and design · `core.js studio.js tools.js editor.js landing.js video.js` app · `i18n.js` RU/EN texts · `specs.js` platform limits (shared by browser and API) · `api/*.js` serverless functions · `logo.svg icon.svg` brand.
+
+
+## AI provider
+Set one key in Vercel env vars: `ANTHROPIC_API_KEY` (text), `OPENAI_API_KEY` (text and pictures) or `YANDEX_API_KEY` + `YANDEX_FOLDER_ID`. `AI_PROVIDER` forces a choice when several are set. With no key the site runs and the AI parts say they are not connected yet.

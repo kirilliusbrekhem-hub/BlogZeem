@@ -128,6 +128,7 @@
   // YandexART is asynchronous: start a job, then poll until the picture is ready.
   BS.makeImage = function (prompt, ratio) {
     return BS.api('image', { prompt: prompt, w: ratio[0], h: ratio[1] }).then(function (j) {
+      if (j.image) return j.image; // providers that answer at once
       var id = j.id, tries = 0;
       function poll() {
         if (++tries > 45) throw apiErr('image', 'timeout');

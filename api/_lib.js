@@ -1,7 +1,9 @@
 'use strict';
-// Yandex AI Studio: YandexGPT (text) + YandexART (images). No other provider.
-// Env: YANDEX_API_KEY, YANDEX_FOLDER_ID, optional YANDEX_MODEL (default yandexgpt/latest),
-//      YANDEX_ART_MODEL (default yandex-art/latest), YANDEX_HOST (tests only).
+// AI provider layer. Pick one by setting its key in the environment (or force it with AI_PROVIDER=anthropic|openai|yandex):
+//   ANTHROPIC_API_KEY  (+ optional ANTHROPIC_MODEL, default claude-haiku-5-5)      text only
+//   OPENAI_API_KEY     (+ optional OPENAI_MODEL gpt-4o-mini, OPENAI_IMAGE_MODEL gpt-image-1)  text and pictures
+//   YANDEX_API_KEY + YANDEX_FOLDER_ID (+ YANDEX_MODEL, YANDEX_ART_MODEL)           text and pictures
+// *_HOST variables exist for tests only. With no key at all, the AI endpoints answer 503 'config' and the site says so.
 
 const SPECS = require('../specs.js');
 
@@ -97,7 +99,7 @@ async function allowAsync(kind, ip, device) {
 // Entry guard shared by every endpoint.
 async function guard(req, res, kind) {
   if (req.method !== 'POST') { fail(res, 405, 'method'); return null; }
-  if (!creds()) { fail(res, 503, 'config', 'AI is not configured yet'); return null; }
+  if (!configured()) { fail(res, 503, 'config', 'AI is not configured yet'); return null; }
   const b = await readBody(req);
   if (!(await allowAsync(kind, ipOf(req), b && b.device))) { fail(res, 429, 'limit', 'Daily limit reached'); return null; }
   return b;
@@ -107,18 +109,22 @@ function creds() {
   const key = process.env.YANDEX_API_KEY, folder = process.env.YANDEX_FOLDER_ID;
   return key && folder ? { key, folder } : null;
 }
+// Which provider is active: AI_PROVIDER if it is usable, else the first one with a key.
+function provider() {
+  const has = { anthropic: !!process.env.ANTHROPIC_API_KEY, openai: !!process.env.OPENAI_API_KEY, yandex: !!creds() };
+  const want = String(process.env.AI_PROVIDER || '').toLowerCase();
+  if (has[want]) return want;
+  return ['anthropic', 'openai', 'yandex'].find((p) => has[p]) || null;
+}
+const configured = () => !!provider();
 
 const clip = (s, n) => String(s == null ? '' : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').trim().slice(0, n);
 const clipLines = (s, n) => clip(s, n);
 const lang = (v) => (v === 'en' ? 'en' : 'ru');
 const LANG_NAME = { ru: 'Russian', en: 'English' };
 
-async function yfetch(url, init) {
-  const c = creds();
-  if (!c) { const e = new Error('config'); e.code = 'config'; throw e; }
-  const r = await fetch(url, Object.assign({}, init, {
-    headers: Object.assign({ authorization: 'Api-Key ' + c.key, 'x-folder-id': c.folder, 'content-type': 'application/json' }, init && init.headers)
-  }));
+async function jfetch(url, init, headers) {
+  const r = await fetch(url, Object.assign({}, init, { headers: Object.assign({ 'content-type': 'application/json' }, headers) }));
   const text = await r.text();
   let data = null;
   try { data = JSON.parse(text); } catch (e) { /* keep null */ }
@@ -130,20 +136,48 @@ async function yfetch(url, init) {
   return data;
 }
 
-async function gpt(system, user, opts) {
+async function yfetch(url, init) {
   const c = creds();
+  if (!c) { const e = new Error('config'); e.code = 'config'; throw e; }
+  return jfetch(url, init, Object.assign({ authorization: 'Api-Key ' + c.key, 'x-folder-id': c.folder }, init && init.headers));
+}
+
+const empty = () => { const e = new Error('empty answer'); e.code = 'upstream'; return e; };
+
+async function gpt(system, user, opts) {
   const o = opts || {};
-  const model = process.env.YANDEX_MODEL || 'yandexgpt/latest';
+  const p = provider();
+  const temperature = o.temperature == null ? 0.7 : o.temperature, maxTokens = o.maxTokens || 2000;
+  if (!p) { const e = new Error('config'); e.code = 'config'; throw e; }
+  if (p === 'anthropic') {
+    const d = await jfetch((process.env.ANTHROPIC_HOST || 'https://api.anthropic.com') + '/v1/messages', {
+      method: 'POST',
+      body: JSON.stringify({ model: process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5', max_tokens: maxTokens, temperature: Math.min(1, temperature), system, messages: [{ role: 'user', content: user }] })
+    }, { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' });
+    const t = d && Array.isArray(d.content) ? d.content.filter((x) => x && x.type === 'text').map((x) => x.text).join('') : '';
+    if (!t) throw empty();
+    return t;
+  }
+  if (p === 'openai') {
+    const d = await jfetch((process.env.OPENAI_HOST || 'https://api.openai.com') + '/v1/chat/completions', {
+      method: 'POST',
+      body: JSON.stringify({ model: process.env.OPENAI_MODEL || 'gpt-4o-mini', max_tokens: maxTokens, temperature, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] })
+    }, { authorization: 'Bearer ' + process.env.OPENAI_API_KEY });
+    const t = d && d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content;
+    if (!t) throw empty();
+    return String(t);
+  }
+  const c = creds();
   const data = await yfetch(HOST() + '/foundationModels/v1/completion', {
     method: 'POST',
     body: JSON.stringify({
-      modelUri: 'gpt://' + c.folder + '/' + model,
-      completionOptions: { stream: false, temperature: o.temperature == null ? 0.7 : o.temperature, maxTokens: String(o.maxTokens || 2000) },
+      modelUri: 'gpt://' + c.folder + '/' + (process.env.YANDEX_MODEL || 'yandexgpt/latest'),
+      completionOptions: { stream: false, temperature, maxTokens: String(maxTokens) },
       messages: [{ role: 'system', text: system }, { role: 'user', text: user }]
     })
   });
   const t = data && data.result && data.result.alternatives && data.result.alternatives[0] && data.result.alternatives[0].message;
-  if (!t || !t.text) { const e = new Error('empty answer'); e.code = 'upstream'; throw e; }
+  if (!t || !t.text) throw empty();
   return String(t.text);
 }
 
@@ -206,4 +240,4 @@ const norm = (s) => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
 
 const strs = (a, n, len) => (Array.isArray(a) ? a : []).map((x) => clip(typeof x === 'string' ? x : '', len)).filter(Boolean).slice(0, n);
 
-module.exports = { SPECS, allow, allowAsync, ipOf, send, fail, guard, readBody, clip, clipLines, lang, LANG_NAME, gpt, askJson, parseJson, yfetch, handleError, strs, voice, fetchText, decode, stripTags, norm, HOST, creds };
+module.exports = { SPECS, allow, allowAsync, ipOf, send, fail, guard, readBody, clip, clipLines, lang, LANG_NAME, gpt, askJson, parseJson, yfetch, jfetch, provider, configured, handleError, strs, voice, fetchText, decode, stripTags, norm, HOST, creds };

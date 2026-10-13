@@ -34,7 +34,7 @@ Object.assign(window.BS.D.en, {
     finalTitle: 'Describe your channel. We do the rest.', finalBtn: 'Build my channel',
     footLine: 'Looks like you hired a team.', footFine: 'Your project data stays in your browser.',
     copied: 'Copied', copyFail: 'Could not copy. Select the text manually.',
-    errConfig: 'AI is not connected yet. The site owner needs to add the Yandex keys in settings.', errLimit: 'Today’s request limit is used up. Come back tomorrow.',
+    errConfig: 'AI is not connected yet. We are connecting it, please check back soon.', errLimit: 'Today’s request limit is used up. Come back tomorrow.',
     errBusy: 'AI is busy right now. Try again in a minute.', errNet: 'Cannot reach the server. Check your connection and try again.', errAuth: 'The AI key was rejected. The site owner needs to check the Yandex key.',
     errAi: 'The AI did not give a usable answer. Press again.', errImage: 'The picture failed. Change the description and try again.',
     otherName: 'Other', otherPh: 'Network name', otherLabel: 'Name of the network',
