@@ -1,0 +1,20 @@
+/* Creator DNA and challenge */
+.dna-hero { padding: 36px 0 28px; display: grid; gap: 10px; }
+.dna-kicker { font-size: .92rem; color: var(--muted); font-weight: 500; }
+.dna-type { font-size: clamp(2.4rem, 7vw, 4.4rem); color: var(--blue); }
+.dna-tag { font-size: clamp(1.1rem, 2.4vw, 1.5rem); font-weight: 500; max-width: 34ch; line-height: 1.35; }
+.dna-chips .chip { cursor: default; }
+.ch-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 8px 0 28px; max-width: 560px; }
+.ch-stat { background: var(--white); border: 1.5px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 2px; }
+.ch-stat b { font-family: var(--display); font-size: clamp(1.4rem, 4vw, 2rem); letter-spacing: -.04em; line-height: 1.1; }
+.ch-stat span { font-size: .85rem; color: var(--muted); }
+.ch-grid .tile.done { background: var(--blue); border-color: var(--blue); color: #fff; }
+.ch-grid .tile.done .fmt, .ch-grid .tile.done .time, .ch-grid .tile.done .topic, .ch-grid .tile.done .day { color: #fff; }
+@media (max-width: 520px) { .ch-stats { gap: 8px; } .ch-stat { padding: 10px 12px; } }
+
+.evo { display: grid; gap: 10px; }
+.evo-lv { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border: 1px solid var(--line, #dcdde8); border-radius: 12px; flex-wrap: wrap; }
+.evo-lv b { min-width: 90px; }
+.evo-lv span:not(.tag) { color: var(--muted, #5b5870); flex: 1; }
+.evo-lv.done { background: rgba(59, 44, 240, .06); }
+.coins .row { display: flex; gap: 10px; flex-wrap: wrap; }
