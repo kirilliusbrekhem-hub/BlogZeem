@@ -14,4 +14,4 @@ AI studio for creators: account setup, 30-day plan, posts, images and video for 
 
 
 ## AI provider
-Set one key in Vercel env vars: `ANTHROPIC_API_KEY` (text), `OPENAI_API_KEY` (text and pictures) or `YANDEX_API_KEY` + `YANDEX_FOLDER_ID`. `AI_PROVIDER` forces a choice when several are set. With no key the site runs and the AI parts say they are not connected yet.
+Set one key in Vercel env vars: `GROQ_API_KEY` (text, free tier), `ANTHROPIC_API_KEY` (text), `OPENAI_API_KEY` (text and pictures) or `YANDEX_API_KEY` + `YANDEX_FOLDER_ID`. `AI_PROVIDER` forces a choice when several are set. With no key the site runs and the AI parts say they are not connected yet.

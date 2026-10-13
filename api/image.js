@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
   const w = Math.min(Math.max(parseInt(b.w, 10) || 1, 1), 16);
   const h = Math.min(Math.max(parseInt(b.h, 10) || 1, 1), 16);
   const p = L.provider();
-  if (p === 'anthropic') return L.fail(res, 503, 'image', 'This AI provider does not draw pictures. Add an OpenAI or Yandex key for pictures.');
+  if (p === 'anthropic' || p === 'groq') return L.fail(res, 503, 'image', 'This AI provider does not draw pictures yet.');
   if (p === 'openai') {
     try {
       const size = w > h ? '1536x1024' : w < h ? '1024x1536' : '1024x1024';

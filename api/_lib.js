@@ -2,6 +2,7 @@
 // AI provider layer. Pick one by setting its key in the environment (or force it with AI_PROVIDER=anthropic|openai|yandex):
 //   ANTHROPIC_API_KEY  (+ optional ANTHROPIC_MODEL, default claude-haiku-5-5)      text only
 //   OPENAI_API_KEY     (+ optional OPENAI_MODEL gpt-4o-mini, OPENAI_IMAGE_MODEL gpt-image-1)  text and pictures
+//   GROQ_API_KEY       (+ optional GROQ_MODEL, default llama-3.3-70b-versatile)    text only, free tier
 //   YANDEX_API_KEY + YANDEX_FOLDER_ID (+ YANDEX_MODEL, YANDEX_ART_MODEL)           text and pictures
 // *_HOST variables exist for tests only. With no key at all, the AI endpoints answer 503 'config' and the site says so.
 
@@ -111,10 +112,10 @@ function creds() {
 }
 // Which provider is active: AI_PROVIDER if it is usable, else the first one with a key.
 function provider() {
-  const has = { anthropic: !!process.env.ANTHROPIC_API_KEY, openai: !!process.env.OPENAI_API_KEY, yandex: !!creds() };
+  const has = { groq: !!process.env.GROQ_API_KEY, anthropic: !!process.env.ANTHROPIC_API_KEY, openai: !!process.env.OPENAI_API_KEY, yandex: !!creds() };
   const want = String(process.env.AI_PROVIDER || '').toLowerCase();
   if (has[want]) return want;
-  return ['anthropic', 'openai', 'yandex'].find((p) => has[p]) || null;
+  return ['groq', 'anthropic', 'openai', 'yandex'].find((p) => has[p]) || null;
 }
 const configured = () => !!provider();
 
@@ -158,11 +159,12 @@ async function gpt(system, user, opts) {
     if (!t) throw empty();
     return t;
   }
-  if (p === 'openai') {
-    const d = await jfetch((process.env.OPENAI_HOST || 'https://api.openai.com') + '/v1/chat/completions', {
-      method: 'POST',
-      body: JSON.stringify({ model: process.env.OPENAI_MODEL || 'gpt-4o-mini', max_tokens: maxTokens, temperature, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] })
-    }, { authorization: 'Bearer ' + process.env.OPENAI_API_KEY });
+  if (p === 'openai' || p === 'groq') {
+    const g = p === 'groq';
+    const url = g ? (process.env.GROQ_HOST || 'https://api.groq.com/openai') + '/v1/chat/completions' : (process.env.OPENAI_HOST || 'https://api.openai.com') + '/v1/chat/completions';
+    const payload = { model: g ? process.env.GROQ_MODEL || 'llama-3.3-70b-versatile' : process.env.OPENAI_MODEL || 'gpt-4o-mini', max_tokens: maxTokens, temperature, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };
+    if (g) payload.response_format = { type: 'json_object' };
+    const d = await jfetch(url, { method: 'POST', body: JSON.stringify(payload) }, { authorization: 'Bearer ' + (g ? process.env.GROQ_API_KEY : process.env.OPENAI_API_KEY) });
     const t = d && d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content;
     if (!t) throw empty();
     return String(t);
