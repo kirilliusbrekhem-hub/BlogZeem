@@ -2,7 +2,7 @@
 // AI provider layer. Pick one by setting its key in the environment (or force it with AI_PROVIDER=anthropic|openai|yandex):
 //   ANTHROPIC_API_KEY  (+ optional ANTHROPIC_MODEL, default claude-haiku-5-5)      text only
 //   OPENAI_API_KEY     (+ optional OPENAI_MODEL gpt-4o-mini, OPENAI_IMAGE_MODEL gpt-image-1)  text and pictures
-//   GROQ_API_KEY       (+ optional GROQ_MODEL, default llama-3.3-70b-versatile)    text only, free tier
+//   GROQ_API_KEY       (+ optional GROQ_MODEL; falls back through gpt-oss-120b, llama-3.3-70b, gpt-oss-20b, llama-3.1-8b)    text only, free tier
 //   YANDEX_API_KEY + YANDEX_FOLDER_ID (+ YANDEX_MODEL, YANDEX_ART_MODEL)           text and pictures
 // *_HOST variables exist for tests only. With no key at all, the AI endpoints answer 503 'config' and the site says so.
 
@@ -145,6 +145,38 @@ async function yfetch(url, init) {
 
 const empty = () => { const e = new Error('empty answer'); e.code = 'upstream'; return e; };
 
+function chatText(d) {
+  const ch = d && d.choices && d.choices[0];
+  const t = ch && ch.message && ch.message.content;
+  if (!t) throw empty();
+  if (ch.finish_reason === 'length') { const e = new Error('cut off: answer hit the token limit'); e.code = 'upstream'; throw e; }
+  return String(t);
+}
+
+// Groq retires and renames models, and a key may lack access to some. Try the configured one, then known alternatives;
+// remember the first that works for the life of this function instance.
+let groqModel = null;
+async function groqChat(system, user, temperature, maxTokens) {
+  const list = [groqModel, process.env.GROQ_MODEL, 'openai/gpt-oss-120b', 'llama-3.3-70b-versatile', 'openai/gpt-oss-20b', 'llama-3.1-8b-instant']
+    .filter((m, i, a) => m && a.indexOf(m) === i);
+  let last;
+  for (const model of list) {
+    const reasoning = /gpt-oss/.test(model);
+    const payload = { model, temperature, max_tokens: maxTokens + (reasoning ? 1500 : 0), messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };
+    if (reasoning) payload.reasoning_effort = 'low';
+    try {
+      const d = await jfetch((process.env.GROQ_HOST || 'https://api.groq.com/openai') + '/v1/chat/completions', { method: 'POST', body: JSON.stringify(payload) }, { authorization: 'Bearer ' + process.env.GROQ_API_KEY });
+      const t = chatText(d);
+      groqModel = model;
+      return t;
+    } catch (e) {
+      last = e;
+      if (!/upstream (404|400)/.test(String(e.message))) throw e; // only "no such model / not allowed" moves on to the next one
+    }
+  }
+  throw last;
+}
+
 async function gpt(system, user, opts) {
   const o = opts || {};
   const p = provider();
@@ -159,15 +191,13 @@ async function gpt(system, user, opts) {
     if (!t) throw empty();
     return t;
   }
-  if (p === 'openai' || p === 'groq') {
-    const g = p === 'groq';
-    const url = g ? (process.env.GROQ_HOST || 'https://api.groq.com/openai') + '/v1/chat/completions' : (process.env.OPENAI_HOST || 'https://api.openai.com') + '/v1/chat/completions';
-    const payload = { model: g ? process.env.GROQ_MODEL || 'llama-3.3-70b-versatile' : process.env.OPENAI_MODEL || 'gpt-4o-mini', max_tokens: maxTokens, temperature, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };
-    const d = await jfetch(url, { method: 'POST', body: JSON.stringify(payload) }, { authorization: 'Bearer ' + (g ? process.env.GROQ_API_KEY : process.env.OPENAI_API_KEY) });
-    const t = d && d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content;
-    if (!t) throw empty();
-    if (d.choices[0].finish_reason === 'length') { const e = new Error('cut off: answer hit the token limit'); e.code = 'upstream'; throw e; }
-    return String(t);
+  if (p === 'groq') return groqChat(system, user, temperature, maxTokens);
+  if (p === 'openai') {
+    const d = await jfetch((process.env.OPENAI_HOST || 'https://api.openai.com') + '/v1/chat/completions', {
+      method: 'POST',
+      body: JSON.stringify({ model: process.env.OPENAI_MODEL || 'gpt-4o-mini', max_tokens: maxTokens, temperature, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] })
+    }, { authorization: 'Bearer ' + process.env.OPENAI_API_KEY });
+    return chatText(d);
   }
   const c = creds();
   const data = await yfetch(HOST() + '/foundationModels/v1/completion', {
