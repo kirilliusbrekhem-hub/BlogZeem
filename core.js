@@ -117,7 +117,8 @@
   BS.errText = function (e) {
     var c = e && e.code;
     var m = { config: 'errConfig', limit: 'errLimit', busy: 'errBusy', net: 'errNet', auth: 'errAuth', brief: 'errBrief', image: 'errImage' };
-    return BS.t(m[c] || 'errAi');
+    var msg = BS.t(m[c] || 'errAi');
+    return !m[c] && e && e.message && e.message !== c ? msg + ' [' + String(e.message).slice(0, 120) + ']' : msg;
   };
   BS.ctx = function (pid) {
     return { brief: BS.S.brief, platform: pid, platformName: (BS.S.names || {})[pid] || '', lang: BS.contentLang(), voice: BS.voiceText() };

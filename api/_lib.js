@@ -163,10 +163,10 @@ async function gpt(system, user, opts) {
     const g = p === 'groq';
     const url = g ? (process.env.GROQ_HOST || 'https://api.groq.com/openai') + '/v1/chat/completions' : (process.env.OPENAI_HOST || 'https://api.openai.com') + '/v1/chat/completions';
     const payload = { model: g ? process.env.GROQ_MODEL || 'llama-3.3-70b-versatile' : process.env.OPENAI_MODEL || 'gpt-4o-mini', max_tokens: maxTokens, temperature, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };
-    if (g) payload.response_format = { type: 'json_object' };
     const d = await jfetch(url, { method: 'POST', body: JSON.stringify(payload) }, { authorization: 'Bearer ' + (g ? process.env.GROQ_API_KEY : process.env.OPENAI_API_KEY) });
     const t = d && d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content;
     if (!t) throw empty();
+    if (d.choices[0].finish_reason === 'length') { const e = new Error('cut off: answer hit the token limit'); e.code = 'upstream'; throw e; }
     return String(t);
   }
   const c = creds();
@@ -200,7 +200,7 @@ async function askJson(system, user, opts) {
   for (let i = 0; i < 2; i++) {
     try {
       const txt = await gpt(i ? sys + '\nYour previous answer was not valid JSON. Fix it.' : sys, user, opts);
-      return parseJson(txt);
+      try { return parseJson(txt); } catch (pe) { pe.message = 'bad json: ' + String(txt).replace(/\s+/g, ' ').slice(0, 70); throw pe; }
     } catch (e) { last = e; if (e.code === 'auth' || e.code === 'config' || e.code === 'busy') break; }
   }
   throw last;
@@ -211,7 +211,8 @@ function handleError(res, e) {
   if (e && e.code === 'auth') return fail(res, 502, 'auth', 'AI key rejected');
   if (e && e.code === 'busy') return fail(res, 503, 'busy', 'AI is busy, try again in a minute');
   if (e && e.code === 'source') return fail(res, 502, 'source', 'The source could not be read');
-  return fail(res, 502, 'ai', 'AI did not return a usable answer');
+  console.error('ai error:', e && e.message);
+  return fail(res, 502, 'ai', String((e && e.message) || 'ai').slice(0, 160));
 }
 
 // Creator Memory: the author's voice and rules, appended to every prompt as data.
