@@ -1,4 +1,4 @@
-/* BlogSeem growth: Creator DNA and the 30-day challenge. Registered as BS.views.dna and BS.views.challenge. */
+/* BlogZeem growth: Creator DNA and the 30-day challenge. Registered as BS.views.dna and BS.views.challenge. */
 (function () {
   'use strict';
   var BS = window.BS, h = BS.h, t = BS.t;
@@ -20,7 +20,7 @@
       if (res[1]) x.drawImage(res[1], 72, 64, 84, 84);
       x.textBaseline = 'alphabetic'; x.textAlign = 'left';
       x.fillStyle = '#15131F'; x.font = '700 46px ' + fam; x.fillText('Blog', 176, 122);
-      var bw = x.measureText('Blog').width; x.fillStyle = '#3B2CF0'; x.fillText('Seem', 176 + bw, 122);
+      var bw = x.measureText('Blog').width; x.fillStyle = '#3B2CF0'; x.fillText('Zeem', 176 + bw, 122);
       canvasFn(x, fam, W, H);
       return new Promise(function (ok) { c.toBlob(function (blob) { ok({ blob: blob, name: name }); }, 'image/png'); });
     });
@@ -44,7 +44,7 @@
       return u.run(share, function () {
         return make().then(function (f) {
           var file = new File([f.blob], fileName, { type: 'image/png' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: 'BlogSeem' }).catch(function () { /* cancelled */ });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: 'BlogZeem' }).catch(function () { /* cancelled */ });
           BS.download(fileName, f.blob); BS.toast(t('xShareFallback'));
         });
       });
@@ -90,7 +90,7 @@
     if (r.ideas.length) out.appendChild(u.sec(t('dnaIdeas'), '', h('div.stack', r.ideas.map(function (x) {
       return h('div.rw', h('p', x), u.btn(t('writeThis'), 'ghost small', function () { BS.newCustomPost(pid, x); }));
     }))));
-    out.appendChild(h('div.view-foot', shareButtons(function () { return drawDna(r, pid); }, 'blogseem-dna.png')));
+    out.appendChild(h('div.view-foot', shareButtons(function () { return drawDna(r, pid); }, 'blogzeem-dna.png')));
   }
 
   function drawDna(r, pid) {
@@ -105,7 +105,7 @@
       x.fillStyle = '#15131F'; x.font = '400 36px Arial, sans-serif'; y += 112;
       r.strengths.slice(0, 3).forEach(function (s) { y = wrap(x, '• ' + s, 72, y, 936, 50, 2) + 14; });
       x.fillStyle = '#5C5A70'; x.font = '400 28px Arial, sans-serif'; x.fillText(t('dnaCardNote'), 72, 1290);
-    }, 'blogseem-dna.png');
+    }, 'blogzeem-dna.png');
   }
 
   /* =========================== 30-day challenge =========================== */
@@ -146,7 +146,7 @@
     });
     stage.appendChild(stats);
     stage.appendChild(u.sec(t('chDays'), t('chDaysHint'), grid));
-    stage.appendChild(h('div.view-foot', shareButtons(function () { return drawChallenge(pd, pid, total); }, 'blogseem-challenge.png')));
+    stage.appendChild(h('div.view-foot', shareButtons(function () { return drawChallenge(pd, pid, total); }, 'blogzeem-challenge.png')));
     refresh();
   };
 
@@ -166,6 +166,6 @@
       x.fillStyle = '#15131F'; x.font = '700 44px Arial, sans-serif';
       x.fillText(t('chCardStreak', { n: rr.now }), 72, top + 3 * (size + gap) + 70);
       x.fillStyle = '#5C5A70'; x.font = '400 28px Arial, sans-serif'; x.fillText(t('chCardNote'), 72, 1290);
-    }, 'blogseem-challenge.png');
+    }, 'blogzeem-challenge.png');
   }
 })();

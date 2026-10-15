@@ -1,4 +1,4 @@
-/* BlogSeem core: state, i18n, DOM helper, API client, image store. */
+/* BlogZeem core: state, i18n, DOM helper, API client, image store. */
 (function () {
   'use strict';
   var BS = window.BS = {};

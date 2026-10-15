@@ -1,4 +1,4 @@
-/* BlogSeem tools: X-Ray audit, Trend Radar, Content Lab, Digital Twin (memory). Registered as BS.views.* */
+/* BlogZeem tools: X-Ray audit, Trend Radar, Content Lab, Digital Twin (memory). Registered as BS.views.* */
 (function () {
   'use strict';
   var BS = window.BS, h = BS.h, t = BS.t, ui = BS.ui;
@@ -61,14 +61,14 @@
       }))));
     }
     var cardBtn = ui.btn(t('xCard'), 'primary', function () {
-      return ui.run(cardBtn, function () { return drawCard(r, pid).then(function (blob) { BS.download('blogseem-xray-' + pid + '.png', blob); }); });
+      return ui.run(cardBtn, function () { return drawCard(r, pid).then(function (blob) { BS.download('blogzeem-xray-' + pid + '.png', blob); }); });
     });
     var shareBtn = ui.btn(t('xShare'), 'ghost', function () {
       return ui.run(shareBtn, function () {
         return drawCard(r, pid).then(function (blob) {
-          var file = new File([blob], 'blogseem-xray.png', { type: 'image/png' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: 'BlogSeem' }).catch(function () { /* cancelled */ });
-          BS.download('blogseem-xray-' + pid + '.png', blob); BS.toast(t('xShareFallback'));
+          var file = new File([blob], 'blogzeem-xray.png', { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: 'BlogZeem' }).catch(function () { /* cancelled */ });
+          BS.download('blogzeem-xray-' + pid + '.png', blob); BS.toast(t('xShareFallback'));
         });
       });
     });
@@ -84,7 +84,7 @@
       x.fillStyle = '#F4F5FA'; x.fillRect(0, 0, W, H);
       if (res[1]) x.drawImage(res[1], 72, 64, 84, 84);
       x.fillStyle = '#15131F'; x.font = '700 46px ' + fam; x.textBaseline = 'alphabetic';
-      x.fillText('Blog', 176, 122); var bw = x.measureText('Blog').width; x.fillStyle = '#3B2CF0'; x.fillText('Seem', 176 + bw, 122);
+      x.fillText('Blog', 176, 122); var bw = x.measureText('Blog').width; x.fillStyle = '#3B2CF0'; x.fillText('Zeem', 176 + bw, 122);
       x.fillStyle = '#5C5A70'; x.font = '500 38px Arial, sans-serif';
       x.fillText(t('xCardTitle', { p: BS.platName(pid) }), 72, 250);
       var big = String(r.score);

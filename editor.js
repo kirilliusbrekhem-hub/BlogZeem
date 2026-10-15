@@ -1,4 +1,4 @@
-/* BlogSeem post editor: text, AI edit tools, cover image, scenes, video and slides. */
+/* BlogZeem post editor: text, AI edit tools, cover image, scenes, video and slides. */
 (function () {
   'use strict';
   var BS = window.BS, h = BS.h, t = BS.t, ui = BS.ui, SPECS = window.BS_SPECS;
@@ -41,22 +41,8 @@
       h('div', h('h2', post.title || post.topic), h('p.meta', title + ' · ' + BS.platName(pid) + ' · ' + BS.fmtName(pid, post.format) + (post.time ? ' · ' + post.time : ''))),
       h('button.ed-close', { type: 'button', 'aria-label': t('close'), onclick: close }, '×'));
 
-    /* ----- preview (right column) ----- */
-    var pvMedia = h('div.pv-media'), pvCap = h('p.pv-cap'), pvTags = h('p.pv-tags');
+    function preview() { /* no social-network mock-up any more; the text area is the preview */ }
     var pvCover = null;
-    function preview() {
-      BS.clear(pvMedia);
-      if (pvCover) pvMedia.appendChild(h('img', { src: pvCover, alt: '' }));
-      else pvMedia.appendChild(h('span.pv-ph', post.cover_text || post.title || ''));
-      if (kind === 'video') pvMedia.appendChild(h('i.pv-play'));
-      var c = post.caption || '';
-      pvCap.textContent = c.length > 260 ? c.slice(0, 260) + '… ' + t('more') : c;
-      pvTags.textContent = (post.tags || []).map(function (x) { return '#' + x; }).join(' ');
-      var r = p.ratio; pvMedia.style.aspectRatio = (kind === 'text' && !pvCover) ? '' : r[0] + ' / ' + r[1];
-      pvMedia.classList.toggle('hide', kind === 'text' && !pvCover);
-    }
-    var phone = h('div.phone', { 'aria-label': t('preview') },
-      h('div.pv-top', h('i.dot', { style: { background: p.color } }), h('span', BS.platName(pid))), pvMedia, pvCap, pvTags);
     BS.imgGet(imgKey('cover')).then(function (v) { if (v) { pvCover = v; preview(); coverShow(v); } });
 
     /* ----- text ----- */
@@ -144,7 +130,7 @@
     var coverDl = ui.btn(t('download'), 'ghost small', null, { hidden: true });
     function coverShow(src) {
       BS.clear(coverFrame); coverFrame.appendChild(h('img', { src: src, alt: t('cover') }));
-      coverDl.hidden = false; coverDl.onclick = function () { BS.download('blogseem-' + pid + '-' + key + '.jpg', BS.dataUrlToBlob(src)); };
+      coverDl.hidden = false; coverDl.onclick = function () { BS.download('blogzeem-' + pid + '-' + key + '.jpg', BS.dataUrlToBlob(src)); };
     }
     var imgPrompt = h('textarea', { rows: 3, maxlength: 500, 'aria-label': t('imgPrompt') }, post.image_prompt || '');
     imgPrompt.addEventListener('input', function () { post.image_prompt = imgPrompt.value; BS.save(); });
@@ -167,7 +153,7 @@
     }
 
     root.appendChild(head);
-    root.appendChild(h('div.ed-body', h('div.ed-main', textSec, labSec, coverSec, sceneSec, outSec), h('aside.ed-side', phone, h('p.fine', t('previewNote')))));
+    root.appendChild(h('div.ed-body', h('div.ed-main', textSec, labSec, coverSec, sceneSec, outSec)));
     preview();
   }
 
@@ -265,7 +251,7 @@
             }
           });
           out.appendChild(vid);
-          out.appendChild(h('div.row-tools', ui.btn(t('download') + ' .' + r.ext, 'primary small', function () { BS.download('blogseem-' + pid + '-' + key + '.' + r.ext, r.blob); }),
+          out.appendChild(h('div.row-tools', ui.btn(t('download') + ' .' + r.ext, 'primary small', function () { BS.download('blogzeem-' + pid + '-' + key + '.' + r.ext, r.blob); }),
             h('span.fine', t('videoInfo', { w: r.w, h: r.h, s: Math.round(r.seconds) }))));
         }).catch(function (e) { BS.toast(e && e.message === 'unsupported' ? t('videoUnsupported') : t('videoFail'), 'err'); }).then(function () { prog.hidden = true; });
       });
@@ -292,13 +278,13 @@
               return window.BSVideo.still({ text: b.text, img: imgs[i] }, i, n, p.ratio, { watermark: true }).then(function (blob) {
                 blobs.push(blob);
                 var url = URL.createObjectURL(blob);
-                grid.appendChild(h('button.slide', { type: 'button', title: t('download'), onclick: function () { BS.download('blogseem-' + pid + '-' + key + '-' + (i + 1) + '.png', blob); } }, h('img', { src: url, alt: t('slideN', { n: i + 1 }) })));
+                grid.appendChild(h('button.slide', { type: 'button', title: t('download'), onclick: function () { BS.download('blogzeem-' + pid + '-' + key + '-' + (i + 1) + '.png', blob); } }, h('img', { src: url, alt: t('slideN', { n: i + 1 }) })));
               });
             });
           }, Promise.resolve());
         }).then(function () {
           grid.appendChild(ui.btn(t('downloadAll'), 'primary small', function () {
-            blobs.forEach(function (bl, i) { setTimeout(function () { BS.download('blogseem-' + pid + '-' + key + '-' + (i + 1) + '.png', bl); }, i * 350); });
+            blobs.forEach(function (bl, i) { setTimeout(function () { BS.download('blogzeem-' + pid + '-' + key + '-' + (i + 1) + '.png', bl); }, i * 350); });
           }));
         });
       });

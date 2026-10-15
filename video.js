@@ -1,4 +1,4 @@
-/* BlogSeem video builder: turns a script (beats) into a captioned video entirely in the browser.
+/* BlogZeem video builder: turns a script (beats) into a captioned video entirely in the browser.
    Canvas + MediaRecorder, no server, no cost. Output is silent: the creator adds voice or music in the app they publish from. */
 (function (root) {
   'use strict';
@@ -106,7 +106,7 @@
     if (watermark) {
       ctx.font = '700 ' + Math.round(Math.min(W, H) * 0.032) + 'px ' + fontFamily;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = 'rgba(255,255,255,.72)';
-      ctx.fillText('BlogSeem', W / 2, H * 0.955);
+      ctx.fillText('BlogZeem', W / 2, H * 0.955);
     }
   }
 

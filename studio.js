@@ -1,4 +1,4 @@
-/* BlogSeem studio: setup, build, account, plan, repurpose, memory. The post editor lives in editor.js. */
+/* BlogZeem studio: setup, build, account, plan, repurpose, memory. The post editor lives in editor.js. */
 (function () {
   'use strict';
   var BS = window.BS, h = BS.h, t = BS.t, ui = BS.ui = {};
@@ -304,7 +304,7 @@
     var dl = ui.btn(t('download'), 'ghost small', null, { hidden: true });
     function show(src) {
       BS.clear(frame); frame.appendChild(h('img', { src: src, alt: t(slot === 'avatar' ? 'avatar' : 'banner') }));
-      dl.hidden = false; dl.onclick = function () { BS.download('blogseem-' + pid + '-' + slot + '.jpg', BS.dataUrlToBlob(src)); };
+      dl.hidden = false; dl.onclick = function () { BS.download('blogzeem-' + pid + '-' + slot + '.jpg', BS.dataUrlToBlob(src)); };
     }
     BS.imgGet(key).then(function (v) { if (v) show(v); });
     var gen = ui.btn(t('makeImage'), 'primary small', function () {
@@ -465,26 +465,26 @@
       var p = pd.posts[String(d.day)], dt = dateFor(d.day);
       rows.push([d.day, dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0'), d.time, d.format, d.topic, d.hook, p ? p.caption : '', p ? p.tags.map(function (x) { return '#' + x; }).join(' ') : '']);
     });
-    BS.download('blogseem-' + pid + '-plan.csv', '\ufeff' + rows.map(function (r) { return r.map(csvCell).join(','); }).join('\r\n'), 'text/csv;charset=utf-8');
+    BS.download('blogzeem-' + pid + '-plan.csv', '\ufeff' + rows.map(function (r) { return r.map(csvCell).join(','); }).join('\r\n'), 'text/csv;charset=utf-8');
   }
 
   function icsText(v) { return String(v || '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;'); }
   function exportIcs(pid) {
-    var pd = BS.pd(pid), L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//BlogSeem//RU', 'CALSCALE:GREGORIAN'];
+    var pd = BS.pd(pid), L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//BlogZeem//RU', 'CALSCALE:GREGORIAN'];
     pd.plan.forEach(function (d) {
       var dt = dateFor(d.day), hm = String(d.time || '19:00').split(':'), hh = String(hm[0]).padStart(2, '0'), mm = hm[1] || '00';
-      L.push('BEGIN:VEVENT', 'UID:bs-' + pid + '-' + d.day + '@blogseem', 'DTSTAMP:' + ymd(new Date()) + 'T000000Z',
+      L.push('BEGIN:VEVENT', 'UID:bs-' + pid + '-' + d.day + '@blogzeem', 'DTSTAMP:' + ymd(new Date()) + 'T000000Z',
         'DTSTART:' + ymd(dt) + 'T' + hh + mm + '00', 'DURATION:PT30M',
         'SUMMARY:' + icsText(BS.platName(pid) + ': ' + d.topic), 'DESCRIPTION:' + icsText(d.hook),
         'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsText(d.topic), 'END:VALARM', 'END:VEVENT');
     });
     L.push('END:VCALENDAR');
-    BS.download('blogseem-' + pid + '.ics', L.join('\r\n'), 'text/calendar;charset=utf-8');
+    BS.download('blogzeem-' + pid + '.ics', L.join('\r\n'), 'text/calendar;charset=utf-8');
   }
 
   function exportAll() {
-    var out = JSON.stringify({ app: 'BlogSeem', exported: new Date().toISOString(), project: BS.S }, null, 2);
-    BS.download('blogseem-project.json', out, 'application/json');
+    var out = JSON.stringify({ app: 'BlogZeem', exported: new Date().toISOString(), project: BS.S }, null, 2);
+    BS.download('blogzeem-project.json', out, 'application/json');
   }
 
   /* ---------- repurpose: one material -> every platform ---------- */

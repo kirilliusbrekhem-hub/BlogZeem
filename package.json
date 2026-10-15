@@ -2,6 +2,6 @@
   "name": "blogseem",
   "version": "1.0.0",
   "private": true,
-  "description": "BlogSeem: AI studio for creators. Account setup, content plan, posts, images, video and an AI editor for any social network.",
+  "description": "BlogZeem: AI studio for creators. Account setup, content plan, posts, images, video and an AI editor for any social network.",
   "engines": { "node": ">=20" }
 }

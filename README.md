@@ -1,4 +1,4 @@
-# BlogSeem
+# BlogZeem
 
 AI studio for creators: account setup, 30-day plan, posts, images and video for any social network, plus an AI editor.
 

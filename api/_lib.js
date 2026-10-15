@@ -256,7 +256,7 @@ async function fetchText(url, ms, max) {
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(), ms || 8000);
   try {
-    const r = await fetch(url, { signal: ac.signal, headers: { 'user-agent': 'Mozilla/5.0 (compatible; BlogSeemBot/1.0)', 'accept-language': 'ru,en;q=0.8' } });
+    const r = await fetch(url, { signal: ac.signal, headers: { 'user-agent': 'Mozilla/5.0 (compatible; BlogZeemBot/1.0)', 'accept-language': 'ru,en;q=0.8' } });
     if (!r.ok) { const e = new Error('http ' + r.status); e.code = 'source'; throw e; }
     const buf = await r.arrayBuffer();
     if (buf.byteLength > (max || 2000000)) { const e = new Error('too large'); e.code = 'source'; throw e; }

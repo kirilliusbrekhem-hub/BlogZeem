@@ -20,5 +20,5 @@ Object.assign(window.BS.D.en, {
     chTitle: '30-day challenge', chLead: 'Mark the days you published, keep the streak and share your progress. Compare yourself only with yourself.',
     chDone: 'published', chStreak: 'current streak', chBest: 'best streak', chPublished: 'published', chMark: 'mark',
     chDays: 'Challenge days', chDaysHint: 'Tap a day when the post went out. Tap again to undo.',
-    chCardTop: '30-day challenge · {p}', chCardPosts: 'posts published', chCardStreak: 'Current streak: {n}', chCardNote: 'My progress on my BlogSeem plan.'
+    chCardTop: '30-day challenge · {p}', chCardPosts: 'posts published', chCardStreak: 'Current streak: {n}', chCardNote: 'My progress on my BlogZeem plan.'
 });

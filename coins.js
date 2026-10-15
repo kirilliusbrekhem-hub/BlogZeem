@@ -1,4 +1,4 @@
-/* BlogSeem coins: an anonymous device id, a server-side balance, and Evolution (a higher personal daily AI limit).
+/* BlogZeem coins: an anonymous device id, a server-side balance, and Evolution (a higher personal daily AI limit).
    The balance lives on the server. The client only asks. If storage is off, the coins UI stays hidden and everything else works. */
 (function () {
   'use strict';

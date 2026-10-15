@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 64" role="img" aria-label="BlogSeem">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 64" role="img" aria-label="BlogZeem">
   <g>
     <rect x="1" y="1" width="62" height="62" rx="15" fill="#F4F5FA"/>
     <rect x="10" y="9" width="34" height="34" rx="9" fill="#C9C4FF"/>
@@ -8,6 +8,6 @@
     <rect x="30" y="40" width="12" height="4.5" rx="2.25" fill="#fff" opacity=".8"/>
   </g>
   <text x="76" y="42" font-family="Unbounded, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="-0.6">
-    <tspan fill="#15131F">Blog</tspan><tspan fill="#3B2CF0">Seem</tspan>
+    <tspan fill="#15131F">Blog</tspan><tspan fill="#3B2CF0">Zeem</tspan>
   </text>
 </svg>
